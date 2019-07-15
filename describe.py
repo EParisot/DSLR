@@ -91,6 +91,9 @@ class Descriptor(object):
         sep()
         for param in self.description[next(iter(self.description))]:
             print(param, end=" | ")
+            for feature in self.description:
+                sp_len = (len(feature) - len(str(round(self.description[feature][param], 2))))
+                print(str(round(self.description[feature][param], 2)) + (" " * sp_len), end=" | ")
             print()
             sep()
 
