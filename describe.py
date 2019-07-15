@@ -1,6 +1,7 @@
 import os
 import re
 import click
+from utils import count, mean, std, _min, _max, q_1, q_2, q_3
 
 class Descriptor(object):
 
@@ -9,12 +10,13 @@ class Descriptor(object):
         self.sep = sep
         self.data = []
         self.labels = []
+        self.features = []
+        self.description = {}
         # Read data
         self.read_data()
         if len(self.data) == 0:
             print("Error : no valid data found in %s" % self.data_file)
-            return
-        print(self.data[42])
+            exit(0)
 
     def read_data(self):
         if os.path.exists(self.data_file):
@@ -34,7 +36,66 @@ class Descriptor(object):
                             self.data.append(data)
     
     def descript(self):
-        pass
+        params = {
+            "count": count,
+            "std  ": std,
+            "min  ": _min,
+            "25%  ": q_1, 
+            "50%  ": q_2, 
+            "75%  ": q_3, 
+            "max  ": _max
+        }
+        num_data = self.get_numerics()
+        for feature in num_data:
+            self.description[feature] = {}
+            self.description[feature]["mean "] = mean(num_data[feature])
+            for i, elem in enumerate(num_data[feature]):
+                # replace NaNs by mean
+                if elem == "NaN":
+                    num_data[feature][i] = self.description[feature]["mean "]
+            for param in params:
+                self.description[feature][param] = params[param](num_data[feature])
+        self.print_descript()
+
+    def get_numerics(self):
+        r = re.compile(r"-?\d+\.\d+")
+        num_data = {}
+        # double check num values
+        for key in self.data[0]:
+            if r.match(self.data[0][key]):
+                num_data[key] = []
+        for key in self.data[-1]:
+            if r.match(self.data[-1][key]):
+                num_data[key] = []
+        # build numeric array
+        for elem in self.data:
+            for key in elem:
+                if key in num_data:
+                    if r.match(elem[key]):
+                        num_data[key].append(float(elem[key]))
+                    else:
+                        num_data[key].append("NaN")
+        return num_data
+
+    def print_descript(self):
+        def sep():
+            for _ in range(lenght):
+                print("_", end="")
+            print()
+        print("     ", end=" | ")
+        lenght = 7
+        for feature in self.description:
+            print(feature, end=" | ")
+            lenght += len(feature) + 3
+        print()
+        sep()
+        for param in self.description[next(iter(self.description))]:
+            print(param, end=" | ")
+            print()
+            sep()
+
+
+
 
 @click.command()
 @click.argument("data_file", type=click.Path(exists=True))
