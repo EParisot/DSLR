@@ -30,14 +30,15 @@ class Descriptor(object):
                             self.labels.append(label)
                     # read data
                     elif len(line_data) > 0:
-                        data = {}
+                        line_dict = {}
                         for j, feature in enumerate(line_data):
-                            data[self.labels[j]] = feature
-                            self.data.append(data)
+                            line_dict[self.labels[j]] = feature
+                        self.data.append(line_dict)
     
     def descript(self):
         params = {
             "count": count,
+            "mean ": mean,
             "std  ": std,
             "min  ": _min,
             "25%  ": q_1, 
@@ -48,11 +49,6 @@ class Descriptor(object):
         num_data = self.get_numerics()
         for feature in num_data:
             self.description[feature] = {}
-            self.description[feature]["mean "] = mean(num_data[feature])
-            for i, elem in enumerate(num_data[feature]):
-                # replace NaNs by mean
-                if elem == "NaN":
-                    num_data[feature][i] = self.description[feature]["mean "]
             for param in params:
                 self.description[feature][param] = params[param](num_data[feature])
         self.print_descript()
