@@ -19,7 +19,7 @@ def std(tab):
     for elem in tab:
         if elem != "NaN":
             variance += (elem - tab_mean) ** 2
-    return (variance / tab_count) ** (1/2)
+    return (variance / (tab_count - 1)) ** (1/2)
 
 def _min(tab):
     _min = tab[0]
