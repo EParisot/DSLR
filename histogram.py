@@ -7,7 +7,7 @@ import click
 @click.option("-sep", "sep", default=",", help="csv separator")
 def main(data_file, sep):
     data = read_data(data_file, sep)
-    num_data = get_numerics(data)
+    num_data = get_numerics(data, True)
     classes = get_classes(data, "Hogwarts House")
     fig = plt.figure()
     # for each matter

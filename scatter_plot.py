@@ -6,23 +6,31 @@ import click
 @click.argument("data_file", type=click.Path(exists=True))
 @click.option("-sep", "sep", default=",", help="csv separator")
 def main(data_file, sep):
+    classes_column = "Hogwarts House"
     data = read_data(data_file, sep)
-    num_data = get_numerics(data)
-    classes = get_classes(data, "Hogwarts House")
+    num_data = get_numerics(data, False)
+    class_list = get_classes(data, classes_column)
     fig = plt.figure()
     # for each matter
-    for i, key in enumerate(num_data.keys()):
-        ax = fig.add_subplot(4, 4, i + 1)
-        ax.set_title(key)
-        # for each class
-        for c in classes:
-            c_tab = []
-            # for each note
-            for j, val in enumerate(num_data[key]):
-                if j in classes[c]:
-                    c_tab.append(val)
-            ax.scatter(c_tab, range(len(c_tab)), alpha=0.5)
-    fig.legend(classes.keys(), loc = (0.8, 0))
+    for j, key_a in enumerate(num_data.keys()):
+        for i, key_b in enumerate(num_data.keys()):
+            if key_b != key_a:
+                ax = fig.add_subplot(len(num_data), len(num_data), len(num_data) * j + i + 1)
+                #ax.set_title(key_a + "/" + key_b)
+                ax.axis("off")
+                classes = []
+                # for each class
+                for c in class_list:
+                    c_tab_a = []
+                    c_tab_b = []
+                    # for each note 
+                    for idx, val in enumerate(data):
+                        if val[classes_column] == c:
+                            c_tab_a.append(float(num_data[key_a][idx]))
+                            c_tab_b.append(float(num_data[key_b][idx]))
+                    classes.append((c_tab_a, c_tab_b))
+                for cat in classes:
+                    ax.scatter(cat[0], cat[1], alpha=0.5)
     fig.tight_layout()
     plt.show(block = True)
 
