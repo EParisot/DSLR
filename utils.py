@@ -1,14 +1,61 @@
+import re
+import os
+
+def read_data(data_file, sep):
+    data = []
+    labels = []
+    if os.path.exists(data_file):
+        with open(data_file) as f:
+            for i, line in enumerate(f):
+                line = line.replace('\n', '')
+                line_data = line.split(sep)
+                # read labels
+                if i == 0 and len(line_data) > 0:
+                    for label in line_data:
+                        labels.append(label)
+                # read data
+                elif len(line_data) > 0:
+                    line_dict = {}
+                    for j, feature in enumerate(line_data):
+                        line_dict[labels[j]] = feature
+                    data.append(line_dict)
+    return data
+
+def get_numerics(data):
+    r = re.compile(r"-?\d+\.\d+")
+    num_data = {}
+    # double check num values
+    for key in data[0]:
+        if r.match(data[0][key]):
+            num_data[key] = []
+    for key in data[-1]:
+        if r.match(data[-1][key]):
+            num_data[key] = []
+    # build numeric array
+    for elem in data:
+        for key in elem:
+            if key in num_data:
+                if r.match(elem[key]):
+                    num_data[key].append(float(elem[key]))
+    return num_data
+
+def get_classes(data, idx):
+    classes = {} 
+    for elem in data:
+        classes[elem[idx]] = []
+    for elem in data:
+        classes[elem[idx]].append(data.index(elem))
+    return classes
+
 def mean(tab):
     total = 0
     for elem in tab:
-        if elem != "NaN":
             total += elem
     return total / count(tab)
 
 def count(tab):
     count = 0
-    for elem in tab:
-        if elem != "NaN":
+    for _ in tab:
             count += 1
     return count
 
@@ -17,14 +64,12 @@ def std(tab):
     tab_mean = mean(tab)
     tab_count = count(tab)
     for elem in tab:
-        if elem != "NaN":
             variance += (elem - tab_mean) ** 2
     return (variance / (tab_count - 1)) ** (1/2)
 
 def _min(tab):
     _min = tab[0]
     for elem in tab:
-        if elem != "NaN":
             if elem < _min:
                 _min = elem
     return _min
@@ -32,7 +77,6 @@ def _min(tab):
 def _max(tab):
     _max = tab[0]
     for elem in tab:
-        if elem != "NaN":
             if elem > _max:
                 _max = elem
     return _max
@@ -40,7 +84,6 @@ def _max(tab):
 def q_1(tab):
     clean_tab = []
     for elem in tab:
-        if elem != "NaN":
             clean_tab.append(elem)
     tab_count = count(clean_tab)
     tab = sorted(clean_tab)
@@ -59,7 +102,6 @@ def q_1(tab):
 def q_2(tab):
     clean_tab = []
     for elem in tab:
-        if elem != "NaN":
             clean_tab.append(elem) 
     tab_count = count(clean_tab)
     tab = sorted(clean_tab)
@@ -73,7 +115,6 @@ def q_2(tab):
 def q_3(tab):
     clean_tab = []
     for elem in tab:
-        if elem != "NaN":
             clean_tab.append(elem)
     tab_count = count(clean_tab)
     tab = sorted(clean_tab)
