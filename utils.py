@@ -55,7 +55,7 @@ def mean(tab):
 
 def count(tab):
     count = 0
-    for _ in tab:
+    for elem in tab:
             count += 1
     return count
 

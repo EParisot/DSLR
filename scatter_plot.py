@@ -21,7 +21,7 @@ def main(data_file, sep):
             for j, val in enumerate(num_data[key]):
                 if j in classes[c]:
                     c_tab.append(val)
-            ax.hist(c_tab, alpha=0.5)
+            ax.scatter(c_tab, range(len(c_tab)), alpha=0.5)
     fig.legend(classes.keys(), loc = (0.8, 0))
     fig.tight_layout()
     plt.show(block = True)
