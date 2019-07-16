@@ -1,5 +1,6 @@
 import re
 import os
+import json
 
 def read_data(data_file, sep):
     data = []
@@ -20,6 +21,32 @@ def read_data(data_file, sep):
                         line_dict[labels[j]] = feature
                     data.append(line_dict)
     return data
+
+def read_model(model_file):
+    model = {}
+    ranges = {}
+    if os.path.exists(model_file):
+        with open(model_file, "r") as f:
+            check = f.read(2)
+            f.seek(0)
+            if len(check) != 0 and check[0] != "\n" and check != "{}":
+                data = json.load(f)
+                for key, val in data["weights"].items():
+                    model[key] = val
+                for key, val in data["ranges"].items():
+                    ranges[key] = val
+    return model, ranges
+
+def save_model(model, ranges, model_file):
+    data = {}
+    data["weights"] = model
+    data["ranges"] = ranges
+    if not os.path.exists(model_file):
+        mode = "w+"
+    else:
+        mode = "w"
+    with open(model_file, mode) as f:
+        json.dump(data, f)
 
 def get_numerics(data, exclude_nan):
     r = re.compile(r"-?\d+\.\d+")
@@ -48,6 +75,12 @@ def get_classes(data, idx):
     for elem in data:
         classes[elem[idx]].append(data.index(elem))
     return classes
+
+def get_Y(data, idx):
+    Y = []
+    for elem in data:
+        Y.append(elem[idx])
+    return Y
 
 def mean(tab):
     total = 0
