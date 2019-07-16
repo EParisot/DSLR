@@ -10,15 +10,18 @@ def main(data_file, sep):
     data = read_data(data_file, sep)
     num_data = get_numerics(data, False)
     class_list = get_classes(data, classes_column)
-    fig = plt.figure()
+    fig = plt.figure("Pair plot")
     # for each matter
     for j, key_a in enumerate(num_data.keys()):
         for i, key_b in enumerate(num_data.keys()):
             ax = fig.add_subplot(len(num_data), len(num_data), len(num_data) * j + i + 1)
             if j == len(num_data)-1:
-                ax.set(xlabel=key_b)
+                ax.set_xlabel(key_b, rotation=45)
             if i == 0:
-                ax.set(ylabel=key_a)
+                ax.set_ylabel(key_a, rotation=45)
+            plt.setp(ax.get_xticklabels(), visible=False)
+            plt.setp(ax.get_yticklabels(), visible=False)
+            ax.tick_params(axis='both', which='both', length=0)
             if key_b != key_a:
                 classes = []
                 # for each class
@@ -45,7 +48,6 @@ def main(data_file, sep):
                     classes.append(c_tab)
                 for cat in classes:
                     ax.hist(cat, alpha=0.5)
-    fig.tight_layout()
     plt.show(block = True)
 
 if __name__ == "__main__":

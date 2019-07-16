@@ -10,7 +10,7 @@ def main(data_file, sep):
     data = read_data(data_file, sep)
     num_data = get_numerics(data, True)
     class_list = get_classes(data, classes_column)
-    fig = plt.figure()
+    fig = plt.figure("Histogram")
     # for each matter
     for i, key in enumerate(num_data.keys()):
         ax = fig.add_subplot(4, 4, i + 1)
