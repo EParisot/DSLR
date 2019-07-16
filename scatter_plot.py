@@ -14,6 +14,7 @@ def main(data_file, sep):
     # for each matter
     for j, key_a in enumerate(num_data.keys()):
         for i, key_b in enumerate(num_data.keys()):
+            ax = fig.add_subplot(len(num_data), len(num_data), len(num_data) * j + i + 1)
             if j == len(num_data)-1:
                 ax.set_xlabel(key_b, rotation=45)
             if i == 0:
