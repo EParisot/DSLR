@@ -22,7 +22,7 @@ def read_data(data_file, sep):
                     data.append(line_dict)
     return data
 
-def read_model(model_file):
+def read_model(model_file, classes):
     model = {}
     ranges = {}
     if os.path.exists(model_file):
@@ -31,10 +31,14 @@ def read_model(model_file):
             f.seek(0)
             if len(check) != 0 and check[0] != "\n" and check != "{}":
                 data = json.load(f)
-                for key, val in data["weights"].items():
-                    model[key] = val
-                for key, val in data["ranges"].items():
-                    ranges[key] = val
+                for curr_class in data["weights"].items():
+                    for key, val in data["weights"][curr_class].items():
+                        model[key] = val
+                    for key, val in data["ranges"].items():
+                        ranges[key] = val
+            else:
+                for _class in classes:
+                    model[_class] = {}
     return model, ranges
 
 def save_model(model, ranges, model_file):
