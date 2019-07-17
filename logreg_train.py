@@ -3,7 +3,7 @@ import click
 import matplotlib.pyplot as plt
 import numpy as np
 import random
-from utils import read_data, read_model, save_model, get_numerics, get_classes, get_Y, _min, _max
+from utils import read_data, read_model, save_model, get_numerics, classes_list, get_Y, _min, _max
 
 class Trainer(object):
 
@@ -15,6 +15,7 @@ class Trainer(object):
         self.model = {}
         self.ranges = {}
         self.lr = lr
+        self.lr_hist = []
         self.acc = []
         self.loss = []
         # Read data
@@ -23,7 +24,7 @@ class Trainer(object):
             print("Error : no valid data found in %s" % data_file)
             exit(0)
         self.classes_column = "Hogwarts House"
-        self.classes = get_classes(self.data, self.classes_column)
+        self.classes = classes_list(self.data, self.classes_column)
         # Read model
         if len(model_file):
             self.model, _ = read_model(model_file, self.classes)
@@ -58,10 +59,7 @@ class Trainer(object):
                 norm_X[key].append((val - k_min) / (k_max - k_min))
         return norm_X
 
-    def train(self):
-        # buid Y
-        Y = get_Y(self.data, self.classes_column)
-        # select X features:
+    def select_feat(self):
         X = get_numerics(self.data, False)
         if len(self.features) == 0:
             self.features = []
@@ -71,7 +69,13 @@ class Trainer(object):
         for feat in X:
             if feat in self.features:
                 X_tmp[feat] = X[feat]
-        X = X_tmp
+        return X_tmp
+
+    def preprocess(self):
+        # buid Y
+        Y = get_Y(self.data, self.classes_column)
+        # select X features:
+        X = self.select_feat()
         # clean X Y and normalise X
         clean_X, clean_Y = self.clean(X, Y)
         norm_X = self.normalise(clean_X)
@@ -83,11 +87,17 @@ class Trainer(object):
         for i, key in enumerate(self.features):
             for idx, _ in enumerate(clean_Y):
                 np_X[idx][i] = norm_X[key][idx]
+        return np_X, clean_Y
+
+    def train(self):
+        #preprocess data
+        X, Y = self.preprocess()
         # one vs all
         for curr_class in self.classes:
+            print("Training on %s" % curr_class)
             # build tmp Y (one v all)
-            tmp_Y = np.zeros((len(clean_Y), 1))
-            for i, val in enumerate(clean_Y):
+            tmp_Y = np.zeros((len(Y), 1))
+            for i, val in enumerate(Y):
                 if val == curr_class:
                     tmp_Y[i] = 1
             # build thetas np array
@@ -95,28 +105,48 @@ class Trainer(object):
             for i, theta in enumerate(self.model[curr_class]):
                 thetas[i] = self.model[curr_class][theta]
             # train
-            self.train_loop(np_X, tmp_Y, thetas, curr_class)
+            loss, acc = self.train_class(X, tmp_Y, thetas, curr_class)
+            self.acc.append(acc)
+            self.loss.append(loss)
             # save model
             save_model(self.model, self.ranges, self.model_file)
         # plot result
         if self.plot:
             plt.figure("Train history")
-            plt.plot(self.acc, label="acc")
-            plt.plot(self.loss, label="loss")
+            for i, acc in enumerate(self.acc):
+                plt.plot(acc, label="acc_" + self.classes[i])
+            for i, loss in enumerate(self.loss):
+                plt.plot(loss, label="loss_" + self.classes[i])
             plt.legend()
             plt.show(block=True)
     
-    def train_loop(self, X, Y, thetas, curr_class):
-        # loop on epochs / batches / data_points
+    def train_class(self, X, Y, thetas, curr_class):
+        loss_class = []
+        acc_class = []
         for epoch in range(self.epochs):
-            print("Training... Epoch : %d" % (epoch + 1))
-            loss, acc = self.train_epoch(X, Y, thetas, curr_class)
-            self.acc.append(acc)
-            self.loss.append(loss)
-            # print
+            print("Epoch : %d" % (epoch + 1))
+            # process train epoch
+            loss, acc = self.train_epoch(X, Y, thetas, curr_class, loss_class)
             print("loss : %f ; acc : %f" % (round(loss, 2), round(acc, 2)))
+            loss_class.append(loss)
+            acc_class.append(acc)
+            # Dynamic plot
+            if self.plot:
+                self.animate()
+        return loss_class, acc_class
+
+    def animate(self):
+        plt.clf()
+        # TODO Plot scatter and loss
+        
+        # plot learning rate history
+        plt.twinx().twiny()
+        plt.plot(self.lr_hist, label="Learning Rate")
+        plt.legend()
+        plt.draw()
+        plt.pause(1/self.epochs)
     
-    def train_epoch(self, X, Y, thetas, curr_class):
+    def train_epoch(self, X, Y, thetas, curr_class, loss_class):
         # train
         pred = self.predict(np.dot(X, thetas))
         loss = self.cost_func(Y, pred)
@@ -125,9 +155,17 @@ class Trainer(object):
         for i, theta in enumerate(thetas):
             self.model[curr_class]["theta_" + str(i)] = theta[0]
         # adjust lr
-        
+        '''if len(loss_class) > 0:
+            if loss >= loss_class[-1]:
+                for i, theta in enumerate(thetas):
+                    self.model[curr_class]["theta_" + str(i)] += self.lr * theta / len(Y)
+                self.lr *=  0.5
+            else:
+                self.lr *= 1.05'''
+        self.lr_hist.append(self.lr)
         # metrics
-        acc = 0
+        new_pred = self.predict(np.dot(X, thetas))
+        acc = np.mean(1 - (Y - new_pred))
         return loss, acc
 
     def predict(self, x):

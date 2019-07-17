@@ -31,11 +31,7 @@ def read_model(model_file, classes):
             f.seek(0)
             if len(check) != 0 and check[0] != "\n" and check != "{}":
                 data = json.load(f)
-                for curr_class in data["weights"].items():
-                    for key, val in data["weights"][curr_class].items():
-                        model[key] = val
-                    for key, val in data["ranges"].items():
-                        ranges[key] = val
+                model = data["weights"]
             else:
                 for _class in classes:
                     model[_class] = {}
@@ -78,6 +74,13 @@ def get_classes(data, idx):
         classes[elem[idx]] = []
     for elem in data:
         classes[elem[idx]].append(data.index(elem))
+    return classes
+
+def classes_list(data, idx):
+    classes = []
+    for elem in data:
+        if elem[idx] not in classes:
+            classes.append(elem[idx])
     return classes
 
 def get_Y(data, idx):
