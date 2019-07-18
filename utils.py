@@ -32,10 +32,13 @@ def read_model(model_file, classes):
             if len(check) != 0 and check[0] != "\n" and check != "{}":
                 data = json.load(f)
                 model = data["weights"]
+                ranges = data["ranges"]
+                if len(classes) == 0:
+                    classes = list(model.keys())
             else:
                 for _class in classes:
                     model[_class] = {}
-    return model, ranges
+    return model, ranges, classes
 
 def save_model(model, ranges, model_file):
     data = {}

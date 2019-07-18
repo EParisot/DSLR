@@ -27,7 +27,7 @@ class Trainer(object):
         self.classes = classes_list(self.data, self.classes_column)
         # Read model
         if len(model_file):
-            self.model, _ = read_model(model_file, self.classes)
+            self.model, _, _ = read_model(model_file, self.classes)
         
     def clean(self, X, Y):
         clean_X = {}
@@ -146,7 +146,8 @@ class Trainer(object):
         plt.twinx().twiny()
         for lr in self.lr_hist:
             plt.plot(lr, label="Learning Rate")
-        plt.legend()
+        if len(self.lr_hist):
+            plt.legend()
         plt.draw()
         plt.pause(1/self.epochs)
     
@@ -156,13 +157,13 @@ class Trainer(object):
         loss = self.cost_func(Y, pred)
         thetas -= (lr_class * np.dot(X.T, (pred - Y)))
         # save thetas
-        for i, theta in enumerate(thetas):
-            self.model[curr_class]["theta_" + str(i)] = theta[0]
+        for i, feature in enumerate(self.features):
+            self.model[curr_class][feature] = thetas[i][0]
         # adjust lr
         if len(loss_class) > 0:
             if loss >= loss_class[-1]:
-                for i, theta in enumerate(thetas):
-                    self.model[curr_class]["theta_" + str(i)] += lr_class * theta / len(Y)
+                for i, feature in enumerate(self.features):
+                    self.model[curr_class][feature] += lr_class * thetas[i] / len(Y)
                 lr_class *=  0.5
             else:
                 lr_class *= 1.05
