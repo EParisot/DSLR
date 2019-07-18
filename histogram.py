@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from utils import read_data, get_numerics, get_classes
+from utils import read_data, get_numerics, get_classes, mean, std, _min
 import click
 
 @click.command()
@@ -10,6 +10,10 @@ def main(data_file, sep):
     data = read_data(data_file, sep)
     num_data = get_numerics(data, True)
     class_list = get_classes(data, classes_column)
+
+    matter = find_most_equal(num_data, class_list)
+    print("Matter with the most homogeneous repartition between houses : %s" % matter)
+
     fig = plt.figure("Histogram")
     # for each matter
     for i, key in enumerate(num_data.keys()):
@@ -17,15 +21,31 @@ def main(data_file, sep):
         ax.set_title(key)
         # for each class
         for c in class_list:
-            c_tab = []
-            # for each note
-            for j, val in enumerate(num_data[key]):
-                if j in class_list[c]:
-                    c_tab.append(val)
+            c_tab = class_tab(num_data[key], class_list[c])
             ax.hist(c_tab, alpha=0.5)
     fig.legend(class_list.keys(), loc = (0.8, 0))
     fig.tight_layout()
     plt.show(block = True)
+
+def class_tab(num_list, _class):
+    c_tab = []
+    # for each note
+    for j, val in enumerate(num_list):
+        if j in _class:
+            c_tab.append(val)
+    return c_tab
+
+def find_most_equal(data, class_list):
+    sums = {}
+    for matter in data.keys():
+        m_means = []
+        m_stds = []
+        for _class in class_list:
+            c_tab = class_tab(data[matter], class_list[_class])
+            m_means.append(mean(c_tab))
+            m_stds.append(std(c_tab))
+        sums[matter] = sum((std(m_means), std(m_stds)))
+    return min(sums, key=sums.get)
 
 if __name__ == "__main__":
     main()
