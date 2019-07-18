@@ -10,6 +10,9 @@ def main(data_file, sep):
     data = read_data(data_file, sep)
     num_data = get_numerics(data, False)
     class_list = get_classes(data, classes_column)
+
+    
+
     fig = plt.figure("Scatter  plot")
     # for each matter
     for j, key_a in enumerate(num_data.keys()):

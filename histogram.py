@@ -36,16 +36,14 @@ def class_tab(num_list, _class):
     return c_tab
 
 def find_most_equal(data, class_list):
-    sums = {}
+    m_std = {}
     for matter in data.keys():
-        m_means = []
         m_stds = []
         for _class in class_list:
             c_tab = class_tab(data[matter], class_list[_class])
-            m_means.append(mean(c_tab))
             m_stds.append(std(c_tab))
-        sums[matter] = sum((std(m_means), std(m_stds)))
-    return min(sums, key=sums.get)
+        m_std[matter] = std(m_stds)
+    return min(m_std, key=m_std.get)
 
 if __name__ == "__main__":
     main()
