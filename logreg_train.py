@@ -14,7 +14,6 @@ class Trainer(object):
         self.model = {}
         self.ranges = {}
         self.lr = lr
-        self.lr_hist = []
         self.acc = []
         self.loss = []
         # Read data
@@ -98,10 +97,9 @@ class Trainer(object):
             for i, theta in enumerate(self.model[curr_class]):
                 thetas[i] = self.model[curr_class][theta]
             # train
-            loss, acc, lr = self.train_class(X, tmp_Y, thetas, curr_class, self.lr)
+            loss, acc = self.train_class(X, tmp_Y, thetas, curr_class)
             self.acc.append(acc)
             self.loss.append(loss)
-            self.lr_hist.append(lr)
             # save model
             save_model(self.model, self.ranges, self.model_file)
         # plot result
@@ -114,56 +112,40 @@ class Trainer(object):
             plt.legend()
             plt.show(block=True)
     
-    def train_class(self, X, Y, thetas, curr_class, lr):
+    def train_class(self, X, Y, thetas, curr_class):
         loss_class = []
         acc_class = []
-        lr_class = []
         for epoch in range(self.epochs):
             print("Epoch : %d" % (epoch + 1))
             # process train epoch
-            loss, acc, lr = self.train_epoch(X, Y, thetas, curr_class, loss_class, lr)
+            loss, acc = self.train_epoch(X, Y, thetas, curr_class, loss_class)
+            if len(loss_class) > 0 and loss_class[-1] - loss < 0.000001:
+                return loss_class, acc_class
             print("loss : %f ; acc : %f" % (round(loss, 2), round(acc, 2)))
             loss_class.append(loss)
             acc_class.append(acc)
-            lr_class.append(lr)
-            # Dynamic plot
-            if self.plot:
-                self.animate()
-        return loss_class, acc_class, lr_class
+        return loss_class, acc_class
 
     def animate(self):
         plt.clf()
         # TODO Plot scatter and loss curve
         
-        # plot learning rate history
-        plt.twinx().twiny()
-        for lr in self.lr_hist:
-            plt.plot(lr, label="Learning Rate")
-        if len(self.lr_hist):
-            plt.legend()
         plt.draw()
         plt.pause(1/self.epochs)
     
-    def train_epoch(self, X, Y, thetas, curr_class, loss_class, lr_class):
+    def train_epoch(self, X, Y, thetas, curr_class, loss_class):
         # train
         pred = self.predict(np.dot(X, thetas))
         loss = self.cost_func(Y, pred)
-        thetas -= (lr_class * np.dot(X.T, (pred - Y)))
+        gradient = np.dot(X.T, (pred - Y)) / len(Y)
+        thetas -= gradient * self.lr
         # save thetas
         for i, feature in enumerate(self.features):
             self.model[curr_class][feature] = thetas[i][0]
-        # adjust lr
-        if len(loss_class) > 0:
-            if loss >= loss_class[-1]:
-                for i, feature in enumerate(self.features):
-                    self.model[curr_class][feature] += lr_class * thetas[i] / len(Y)
-                lr_class *=  0.5
-            else:
-                lr_class *= 1.05
         # metrics
         new_pred = self.predict(np.dot(X, thetas))
         acc = np.mean(1 - (Y - new_pred))
-        return loss, acc, lr_class
+        return loss, acc
 
     def predict(self, x):
         return 1.0 / (1 + np.exp(-x))
