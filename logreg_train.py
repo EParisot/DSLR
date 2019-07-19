@@ -138,7 +138,7 @@ class Trainer(object):
         pred = self.predict(np.dot(X, thetas))
         loss = self.cost_func(Y, pred)
         gradient = np.dot(X.T, (pred - Y)) / len(Y)
-        thetas -= gradient * self.lr
+        thetas -= self.lr * gradient
         # save thetas
         for i, feature in enumerate(self.features):
             self.model[curr_class][feature] = thetas[i][0]

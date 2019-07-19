@@ -56,7 +56,9 @@ def covariance(m_cmp):
         mean_diff_a.append(i - mean_a)
     for i in m_cmp[1]:
         mean_diff_b.append(i - mean_b)
-    mean_diff = [a * b for a, b in list(zip(mean_diff_a, mean_diff_b))]
+    mean_diff = []
+    for i, _ in enumerate(mean_diff_a):
+        mean_diff.append(mean_diff_a[i] * mean_diff_b[i])
     return mean(mean_diff) / (std_a * std_b)
 
 def find_similar_matters(num_data, data_cmp):
