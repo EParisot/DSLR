@@ -8,7 +8,7 @@ from math import isnan
 @click.option("-sep", "sep", default=",", help="csv separator")
 def main(data_file, sep):
     classes_column = "Hogwarts House"
-    data = read_data(data_file, sep)
+    data, _ = read_data(data_file, sep)
     num_data = get_numerics(data, False)
     Y = get_Y(data, classes_column)
     num_data, labels = clean(num_data, Y)
@@ -45,22 +45,25 @@ def main(data_file, sep):
     print("Similar matters are %s and %s" % (matter_1, matter_2))
     plt.show(block = True)
 
+def covariance(m_cmp):
+    mean_diff_a = []
+    mean_diff_b = []
+    std_a = std(m_cmp[0])
+    std_b = std(m_cmp[1])
+    mean_a = mean(m_cmp[0])
+    mean_b = mean(m_cmp[1])
+    for i in m_cmp[0]:
+        mean_diff_a.append(i - mean_a)
+    for i in m_cmp[1]:
+        mean_diff_b.append(i - mean_b)
+    mean_diff = [a * b for a, b in list(zip(mean_diff_a, mean_diff_b))]
+    return mean(mean_diff) / (std_a * std_b)
+
 def find_similar_matters(num_data, data_cmp):
     res = []
     for m_cmp in data_cmp:
-        mean_diff_a = []
-        mean_diff_b = []
-        std_a = std(m_cmp[0])
-        std_b = std(m_cmp[1])
-        mean_a = mean(m_cmp[0])
-        mean_b = mean(m_cmp[1])
-        for i in m_cmp[0]:
-            mean_diff_a.append(i - mean_a)
-        for i in m_cmp[1]:
-            mean_diff_b.append(i - mean_b)
-        mean_diff = [a * b for a, b in list(zip(mean_diff_a, mean_diff_b))]
-        cov_m_cmp = mean(mean_diff)
-        res.append(cov_m_cmp / (std_a * std_b))
+        covar = covariance(m_cmp)
+        res.append(covar)
     k_max = 0
     id_max = 0
     for i, elem in enumerate(res):

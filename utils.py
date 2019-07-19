@@ -21,7 +21,7 @@ def read_data(data_file, sep):
                     for j, feature in enumerate(line_data):
                         line_dict[labels[j]] = feature
                     data.append(line_dict)
-    return data
+    return data, labels
 
 def read_model(model_file, classes):
     model = {}

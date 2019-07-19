@@ -7,9 +7,8 @@ from utils import read_data, read_model, save_model, get_numerics, clean, classe
 
 class Trainer(object):
 
-    def __init__(self, data_file, features, sep, model_file, plot, epochs, lr):
+    def __init__(self, data_file, features_file, sep, model_file, plot, epochs, lr):
         self.model_file = model_file
-        self.features = list(features)
         self.plot = plot
         self.epochs = epochs
         self.model = {}
@@ -19,15 +18,26 @@ class Trainer(object):
         self.acc = []
         self.loss = []
         # Read data
-        self.data = read_data(data_file, sep)
+        self.data, self.labels = read_data(data_file, sep)
         if len(self.data) == 0:
             print("Error : no valid data found in %s" % data_file)
             exit(0)
+        self.features = self.get_features(features_file)
         self.classes_column = "Hogwarts House"
         self.classes = classes_list(self.data, self.classes_column)
         # Read model
         if len(model_file):
             self.model, _, _ = read_model(model_file, self.classes)
+
+    def get_features(self, features_file):
+        features = []
+        if len(features_file) > 0:
+            with open(features_file) as f:
+                for line in f:
+                    feature = line.replace("\n", "")
+                    if len(feature) > 0 and feature in self.labels:
+                        features.append(feature)
+        return features
 
     def normalise(self, X):
         norm_X = {}
@@ -60,7 +70,7 @@ class Trainer(object):
         # select X features:
         X = self.select_feat()
         # clean X Y and normalise X
-        clean_X, clean_Y = self.clean(X, Y)
+        clean_X, clean_Y = clean(X, Y)
         norm_X = self.normalise(clean_X)
         # append first [ones] to X
         norm_X["ones"] = [1.0] * len(clean_Y)
@@ -168,12 +178,12 @@ class Trainer(object):
 @click.argument("data_file", type=click.Path(exists=True))
 @click.option("-sep", "sep", default=",", help="csv separator")
 @click.argument("model_file", default="model.json")
-@click.option("-f", "features", multiple=True, help="select features")
+@click.option("-f", "features_file", default="", help="selected features file (one by line)")
 @click.option("-p", "plot", is_flag=True, help="plot data")
 @click.option("-e", "epochs", default=1, help="epochs to train")
 @click.option("-l", "learning_rate", default=0.1, help="learning rate")
-def main(data_file, features, sep, model_file, plot, epochs, learning_rate):
-    trainer = Trainer(data_file, features, sep, model_file, plot, epochs, learning_rate)
+def main(data_file, features_file, sep, model_file, plot, epochs, learning_rate):
+    trainer = Trainer(data_file, features_file, sep, model_file, plot, epochs, learning_rate)
     trainer.train()
 
 

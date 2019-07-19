@@ -14,7 +14,7 @@ class Predictor(object):
         self.features = []
         self.classes = []
         # Read data
-        self.data = read_data(data_file, sep)
+        self.data, _ = read_data(data_file, sep)
         if len(self.data) == 0:
             print("Error : no valid data found in %s" % data_file)
             exit(0)

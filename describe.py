@@ -10,7 +10,7 @@ class Descriptor(object):
         self.features = []
         self.description = {}
         # Read data
-        self.data = read_data(self.data_file, self.sep)
+        self.data, _ = read_data(self.data_file, self.sep)
         if len(self.data) == 0:
             print("Error : no valid data found in %s" % self.data_file)
             exit(0)
