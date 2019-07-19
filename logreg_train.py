@@ -3,7 +3,7 @@ import click
 import matplotlib.pyplot as plt
 import numpy as np
 import random
-from utils import read_data, read_model, save_model, get_numerics, classes_list, get_Y, _min, _max
+from utils import read_data, read_model, save_model, get_numerics, clean, classes_list, get_Y, _min, _max
 
 class Trainer(object):
 
@@ -28,23 +28,6 @@ class Trainer(object):
         # Read model
         if len(model_file):
             self.model, _, _ = read_model(model_file, self.classes)
-        
-    def clean(self, X, Y):
-        clean_X = {}
-        clean_Y = []
-        for key in X:
-            clean_X[key] = []
-        for idx, _ in enumerate(X[next(iter(X))]):
-            nan = False
-            for key in X:
-                if X[key][idx] == "NaN":
-                    nan = True
-                    break
-            if nan == False:
-                clean_Y.append(Y[idx])
-                for key in X:
-                    clean_X[key].append(X[key][idx])
-        return clean_X, clean_Y
 
     def normalise(self, X):
         norm_X = {}

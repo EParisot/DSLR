@@ -1,6 +1,7 @@
 import re
 import os
 import json
+from math import isnan
 
 def read_data(data_file, sep):
     data = []
@@ -71,6 +72,23 @@ def get_numerics(data, exclude_nan):
                     num_data[key].append("NaN")
     return num_data
 
+def clean(X, Y):
+    clean_X = {}
+    clean_Y = []
+    for key in X:
+        clean_X[key] = []
+    for idx, _ in enumerate(X[next(iter(X))]):
+        nan = False
+        for key in X:
+            if X[key][idx] == "NaN":
+                nan = True
+                break
+        if nan == False:
+            clean_Y.append(Y[idx])
+            for key in X:
+                clean_X[key].append(X[key][idx])
+    return clean_X, clean_Y
+
 def get_classes(data, idx):
     classes = {} 
     for elem in data:
@@ -94,15 +112,16 @@ def get_Y(data, idx):
 
 def mean(tab):
     total = 0
+    tab_count = count(tab)
     for elem in tab:
-        if elem != "NaN":
+        if elem != "NaN" and not isnan(elem):
             total += elem
-    return total / count(tab)
+    return total / tab_count
 
 def count(tab):
     count = 0
     for elem in tab:
-        if elem != "NaN":
+        if elem != "NaN" and not isnan(elem):
             count += 1
     return count
 
@@ -111,14 +130,14 @@ def std(tab):
     tab_mean = mean(tab)
     tab_count = count(tab)
     for elem in tab:
-        if elem != "NaN":
+        if elem != "NaN" and not isnan(elem):
             variance += (elem - tab_mean) ** 2
     return (variance / (tab_count - 1)) ** (1/2)
 
 def _min(tab):
     _min = tab[0]
     for elem in tab:
-        if elem != "NaN":
+        if elem != "NaN" and not isnan(elem):
             if elem < _min:
                 _min = elem
     return _min
@@ -126,7 +145,7 @@ def _min(tab):
 def _max(tab):
     _max = tab[0]
     for elem in tab:
-        if elem != "NaN":
+        if elem != "NaN" and not isnan(elem):
             if elem > _max:
                 _max = elem
     return _max
@@ -134,7 +153,7 @@ def _max(tab):
 def q_1(tab):
     clean_tab = []
     for elem in tab:
-        if elem != "NaN":
+        if elem != "NaN" and not isnan(elem):
             clean_tab.append(elem)
     tab_count = count(clean_tab)
     tab = sorted(clean_tab)
@@ -153,7 +172,7 @@ def q_1(tab):
 def q_2(tab):
     clean_tab = []
     for elem in tab:
-        if elem != "NaN":
+        if elem != "NaN" and not isnan(elem):
             clean_tab.append(elem) 
     tab_count = count(clean_tab)
     tab = sorted(clean_tab)
@@ -167,7 +186,7 @@ def q_2(tab):
 def q_3(tab):
     clean_tab = []
     for elem in tab:
-        if elem != "NaN":
+        if elem != "NaN" and not isnan(elem):
             clean_tab.append(elem)
     tab_count = count(clean_tab)
     tab = sorted(clean_tab)
