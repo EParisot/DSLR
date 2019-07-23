@@ -16,6 +16,8 @@ class Trainer(object):
         self.lr = lr
         self.acc = []
         self.loss = []
+        self.val_acc = []
+        self.val_loss = []
         # Read data
         self.data, self.labels = read_data(data_file, sep)
         if len(self.data) == 0:
@@ -27,6 +29,12 @@ class Trainer(object):
         # Read model
         if len(model_file):
             self.model, _, _ = read_model(model_file, self.classes)
+        self.X_train = []
+        self.X_val = []
+        self.Y_train = []
+        self.Y_val = []
+        self.thetas = []
+        self.curr_class = ""
 
     def get_features(self, features_file):
         features = []
@@ -79,27 +87,42 @@ class Trainer(object):
         for i, key in enumerate(self.features):
             for idx, _ in enumerate(clean_Y):
                 np_X[idx][i] = norm_X[key][idx]
-        return np_X, clean_Y
+        # Shuffle data
+        l = list(zip(np_X, clean_Y))
+        random.shuffle(l)
+        X, Y = zip(*l)
+        # Validation split
+        split_point = int(0.8 * len(X))
+        self.X_train = np.array(X[:split_point])
+        self.Y_train = np.array(Y[:split_point])
+        self.X_val = np.array(X[split_point:])
+        self.Y_val = np.array(Y[split_point:])
 
     def train(self):
         #preprocess data
-        X, Y = self.preprocess()
+        self.preprocess()
         # one vs all
-        for curr_class in self.classes:
-            print("Training on %s" % curr_class)
+        for self.curr_class in self.classes:
+            print("Training on %s" % self.curr_class)
             # build tmp Y (one v all)
-            tmp_Y = np.zeros((len(Y), 1))
-            for i, val in enumerate(Y):
-                if val == curr_class:
+            tmp_Y = np.zeros((len(self.Y_train), 1))
+            for i, val in enumerate(self.Y_train):
+                if val == self.curr_class:
                     tmp_Y[i] = 1
+            tmp_Y_val = np.zeros((len(self.Y_val), 1))
+            for i, val in enumerate(self.Y_val):
+                if val == self.curr_class:
+                    tmp_Y_val[i] = 1
             # build thetas np array
-            thetas = np.zeros((len(self.features), 1))
-            for i, theta in enumerate(self.model[curr_class]):
-                thetas[i] = self.model[curr_class][theta]
+            self.thetas = np.zeros((len(self.features), 1))
+            for i, self.theta in enumerate(self.model[self.curr_class]):
+                self.thetas[i] = self.model[self.curr_class][self.theta]
             # train
-            loss, acc = self.train_class(X, tmp_Y, thetas, curr_class)
+            loss, acc, val_loss, val_acc = self.train_class(tmp_Y, tmp_Y_val)
             self.acc.append(acc)
             self.loss.append(loss)
+            self.val_acc.append(val_acc)
+            self.val_loss.append(val_loss)
             # save model
             save_model(self.model, self.ranges, self.model_file)
         # plot result
@@ -110,21 +133,32 @@ class Trainer(object):
             for i, loss in enumerate(self.loss):
                 plt.plot(loss, label="loss_" + self.classes[i])
             plt.legend()
+            plt.figure("Validation history")
+            for i, val_acc in enumerate(self.val_acc):
+                plt.plot(val_acc, label="val_acc_" + self.classes[i])
+            for i, val_loss in enumerate(self.val_loss):
+                plt.plot(val_loss, label="val_loss_" + self.classes[i])
+            plt.legend()
             plt.show(block=True)
     
-    def train_class(self, X, Y, thetas, curr_class):
+    def train_class(self, Y, Y_val):
         loss_class = []
         acc_class = []
+        val_loss_class = []
+        val_acc_class = []
         for epoch in range(self.epochs):
             print("Epoch : %d" % (epoch + 1))
             # process train epoch
-            loss, acc = self.train_epoch(X, Y, thetas, curr_class, loss_class)
-            if len(loss_class) > 0 and loss_class[-1] - loss < 0.000001:
-                return loss_class, acc_class
+            loss, acc, val_loss, val_acc = self.train_epoch(Y, Y_val, loss_class)
+            if val_acc >= 0.98:
+                return loss_class, acc_class, val_loss_class, val_acc_class
             print("loss : %f ; acc : %f" % (round(loss, 2), round(acc, 2)))
+            print("val_loss : %f ; val_acc : %f" % (round(val_loss, 2), round(val_acc, 2)))
             loss_class.append(loss)
             acc_class.append(acc)
-        return loss_class, acc_class
+            val_loss_class.append(val_loss)
+            val_acc_class.append(val_acc)
+        return loss_class, acc_class, val_loss_class, val_acc_class
 
     def animate(self):
         plt.clf()
@@ -133,19 +167,23 @@ class Trainer(object):
         plt.draw()
         plt.pause(1/self.epochs)
     
-    def train_epoch(self, X, Y, thetas, curr_class, loss_class):
+    def train_epoch(self, Y, Y_val, loss_class):
         # train
-        pred = self.predict(np.dot(X, thetas))
-        loss = self.cost_func(Y, pred)
-        gradient = np.dot(X.T, (pred - Y)) / len(Y)
-        thetas -= self.lr * gradient
+        pred = self.predict(np.dot(self.X_train, self.thetas))
+        gradient = np.dot(self.X_train.T, (pred - Y)) / len(Y)
+        self.thetas -= self.lr * gradient
         # save thetas
         for i, feature in enumerate(self.features):
-            self.model[curr_class][feature] = thetas[i][0]
+            self.model[self.curr_class][feature] = self.thetas[i][0]
         # metrics
-        new_pred = self.predict(np.dot(X, thetas))
-        acc = np.mean(1 - (Y - new_pred))
-        return loss, acc
+        new_pred = self.predict(np.dot(self.X_train, self.thetas))
+        loss = self.cost_func(Y, new_pred)
+        acc = np.mean(1 - abs(Y - new_pred))
+        # Cross validation
+        val_pred = self.predict(np.dot(self.X_val, self.thetas))
+        val_loss = self.cost_func(Y_val, val_pred)
+        val_acc = np.mean(1 - abs(Y_val - val_pred))
+        return loss, acc, val_loss, val_acc
 
     def predict(self, x):
         return 1.0 / (1 + np.exp(-x))

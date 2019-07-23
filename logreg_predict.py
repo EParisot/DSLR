@@ -3,7 +3,7 @@ import click
 import matplotlib.pyplot as plt
 import numpy as np
 import random
-from utils import read_data, read_model, save_model, get_numerics, classes_list, get_Y, _min, _max
+from utils import read_data, read_model, save_model, get_numerics, classes_list, get_Y, _min, _max, mean
 
 class Predictor(object):
 
@@ -32,13 +32,10 @@ class Predictor(object):
         for key in X:
             clean_X[key] = []
         for idx, _ in enumerate(X[next(iter(X))]):
-            nan = False
             for key in X:
                 if X[key][idx] == "NaN":
-                    nan = True
-                    break
-            if nan == False:
-                for key in X:
+                    clean_X[key].append(mean(X[key]))
+                else:
                     clean_X[key].append(X[key][idx])
         return clean_X
 
@@ -92,7 +89,6 @@ class Predictor(object):
             # predict
             pred = self.predict(np.dot(X, thetas))
             Y.append(pred)
-        print(Y)
         pred_by_class = []
         for i in range(len(Y[0])):
             pred = []
@@ -100,8 +96,9 @@ class Predictor(object):
                 pred.append(Y[j][i])
             pred_by_class.append(pred)
         # argmax
-        for pred in pred_by_class:
-            print(pred.index(max(pred)), self.classes[pred.index(max(pred))])
+        print("ID, Class")
+        for i, pred in enumerate(pred_by_class):
+            print(str(i) + ",", self.classes[pred.index(max(pred))])
 
 
 @click.command()
