@@ -102,6 +102,8 @@ class Trainer(object):
         #preprocess data
         self.preprocess()
         # one vs all
+        if self.plot == True:
+            plt.figure("Classes")
         for self.curr_class in self.classes:
             print("Training on %s" % self.curr_class)
             # build tmp Y (one v all)
@@ -127,19 +129,22 @@ class Trainer(object):
             save_model(self.model, self.ranges, self.model_file)
         # plot result
         if self.plot:
-            plt.figure("Train history")
+            plt.figure("History")
+            plt.subplot(1, 2, 1)
+            plt.title("Train history")
             for i, acc in enumerate(self.acc):
                 plt.plot(acc, label="acc_" + self.classes[i])
             for i, loss in enumerate(self.loss):
                 plt.plot(loss, label="loss_" + self.classes[i])
             plt.legend()
-            plt.figure("Validation history")
+            plt.subplot(1, 2, 2)
+            plt.title("Validation history")
             for i, val_acc in enumerate(self.val_acc):
                 plt.plot(val_acc, label="val_acc_" + self.classes[i])
             for i, val_loss in enumerate(self.val_loss):
                 plt.plot(val_loss, label="val_loss_" + self.classes[i])
             plt.legend()
-            plt.show(block=True)
+            plt.show()
     
     def train_class(self, Y, Y_val):
         loss_class = []
@@ -158,14 +163,20 @@ class Trainer(object):
             acc_class.append(acc)
             val_loss_class.append(val_loss)
             val_acc_class.append(val_acc)
+        if self.plot == True:
+            self.animate(Y)
         return loss_class, acc_class, val_loss_class, val_acc_class
 
-    def animate(self):
-        plt.clf()
+    def animate(self, Y):
+        plt.subplot(2, 2, self.classes.index(self.curr_class)+1)
+        plt.title(self.curr_class)
         # TODO Plot scatter and loss curve
-        
+        plt.scatter(range(len(Y)), sorted(Y))
+        plt.twinx().twiny()
+        pred = self.predict(np.dot(self.X_train, self.thetas))
+        plt.plot(sorted(pred))
+        plt.tight_layout()
         plt.draw()
-        plt.pause(1/self.epochs)
     
     def train_epoch(self, Y, Y_val, loss_class):
         # train
