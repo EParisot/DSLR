@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from utils import read_data, get_numerics, get_classes
 import click
+import math
 
 @click.command()
 @click.argument("data_file", type=click.Path(exists=True))
@@ -47,7 +48,11 @@ def main(data_file, sep):
                             c_tab.append(float(val))
                     classes.append(c_tab)
                 for cat in classes:
-                    ax.hist(cat, alpha=0.5)
+                    clean_cat = []
+                    for elem in cat:
+                        if not math.isnan(elem):
+                            clean_cat.append(elem)
+                    ax.hist(clean_cat, alpha=0.5)
     plt.show(block = True)
 
 if __name__ == "__main__":
