@@ -95,10 +95,12 @@ class Predictor(object):
             for j in range(len(Y)):
                 pred.append(Y[j][i])
             pred_by_class.append(pred)
-        # argmax
-        print("ID, Class")
-        for i, pred in enumerate(pred_by_class):
-            print(str(i) + ",", self.classes[pred.index(max(pred))])
+        with open("houses.csv", mode="w") as f:
+            f.write("Index,Hogwarts House\n")
+            for i, pred in enumerate(pred_by_class):
+                f.write(str(i) + "," + self.classes[pred.index(max(pred))] + "\n")
+        print("Predictions written in 'houses.csv'")
+
 
 
 @click.command()

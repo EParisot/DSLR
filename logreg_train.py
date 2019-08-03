@@ -125,6 +125,8 @@ class Trainer(object):
             self.loss.append(loss)
             self.val_acc.append(val_acc)
             self.val_loss.append(val_loss)
+            if self.plot == True:
+                self.animate(tmp_Y)
             # save model
             save_model(self.model, self.ranges, self.model_file)
         # plot result
@@ -155,22 +157,20 @@ class Trainer(object):
             print("Epoch : %d" % (epoch + 1))
             # process train epoch
             loss, acc, val_loss, val_acc = self.train_epoch(Y, Y_val, loss_class)
-            if val_acc >= 0.98:
-                return loss_class, acc_class, val_loss_class, val_acc_class
             print("loss : %f ; acc : %f" % (round(loss, 2), round(acc, 2)))
             print("val_loss : %f ; val_acc : %f" % (round(val_loss, 2), round(val_acc, 2)))
             loss_class.append(loss)
             acc_class.append(acc)
             val_loss_class.append(val_loss)
             val_acc_class.append(val_acc)
-        if self.plot == True:
-            self.animate(Y)
+            if val_acc > 0.98:
+                return loss_class, acc_class, val_loss_class, val_acc_class
+
         return loss_class, acc_class, val_loss_class, val_acc_class
 
     def animate(self, Y):
         plt.subplot(2, 2, self.classes.index(self.curr_class)+1)
         plt.title(self.curr_class)
-        # TODO Plot scatter and loss curve
         plt.scatter(range(len(Y)), sorted(Y))
         plt.twinx().twiny()
         pred = self.predict(np.dot(self.X_train, self.thetas))
