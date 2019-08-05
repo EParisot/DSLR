@@ -39,6 +39,9 @@ def read_model(model_file, classes):
             else:
                 for _class in classes:
                     model[_class] = {}
+    else:
+        print("No model file")
+        exit(0)
     return model, ranges, classes
 
 def save_model(model, ranges, model_file):
