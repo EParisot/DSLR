@@ -40,7 +40,7 @@ def main(data_file, sep):
                             c_tab_b.append(float(num_data[key_b][idx]))
                     classes.append((c_tab_a, c_tab_b))
                 for cat in classes:
-                    ax.scatter(cat[0], cat[1], alpha=0.5)
+                    ax.scatter(cat[0], cat[1], alpha=0.5, marker=".")
     matter_1, matter_2 = find_similar_matters(num_data, data_cmp)
     print("Similar matters are %s and %s" % (matter_1, matter_2))
     plt.show(block = True)

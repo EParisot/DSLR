@@ -38,12 +38,15 @@ class Trainer(object):
 
     def get_features(self, features_file):
         features = []
-        if len(features_file) > 0:
+        if len(features_file) > 0 and os.path.exists(features_file):
             with open(features_file) as f:
                 for line in f:
                     feature = line.replace("\n", "")
                     if len(feature) > 0 and feature in self.labels:
                         features.append(feature)
+        else:
+            print("No features file")
+            exit(0)
         return features
 
     def normalise(self, X):
