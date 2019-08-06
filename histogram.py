@@ -23,11 +23,7 @@ def main(data_file, sep):
         classes = []
         # for each class
         for c in class_list:
-            c_tab = []
-            # for each note
-            for idx, val in enumerate(num_data[key]):
-                if idx in class_list[c]:
-                    c_tab.append(float(val))
+            c_tab = class_tab(num_data[key], class_list[c])
             classes.append(c_tab)
         for cat in classes:
             clean_cat = []
@@ -44,7 +40,7 @@ def class_tab(num_list, _class):
     # for each note
     for j, val in enumerate(num_list):
         if j in _class:
-            c_tab.append(val)
+            c_tab.append(float(val))
     return c_tab
 
 def find_most_equal(data, class_list):
