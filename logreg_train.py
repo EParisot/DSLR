@@ -160,13 +160,12 @@ class Trainer(object):
             print("Epoch : %d" % (epoch + 1))
             # process train epoch
             loss, acc, val_loss, val_acc = self.train_epoch(Y, Y_val, loss_class)
-<<<<<<< HEAD
+            # CHeck result
             if val_acc >= 0.98:
                 if self.plot == True:
                     self.animate(Y)
                 return loss_class, acc_class, val_loss_class, val_acc_class
-=======
->>>>>>> 8e00c54d16392335d58d9eedbdb8aafcbffb0e39
+
             print("loss : %f ; acc : %f" % (round(loss, 2), round(acc, 2)))
             print("val_loss : %f ; val_acc : %f" % (round(val_loss, 2), round(val_acc, 2)))
             loss_class.append(loss)
