@@ -59,14 +59,14 @@ def get_numerics(data, get_hand=False):
     r = re.compile(r"-?\d+\.\d+")
     num_data = {}
     # double check num values
+    if get_hand:
+        num_data["Best Hand"] = []
     for key in data[0]:
         if r.match(data[0][key]):
             num_data[key] = []
     for key in data[-1]:
         if r.match(data[-1][key]):
             num_data[key] = []
-    if get_hand:
-        num_data["Best Hand"] = []
     # build numeric array
     for elem in data:
         for key in elem:

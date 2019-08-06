@@ -82,9 +82,6 @@ class Trainer(object):
         # clean and normalise X
         clean_X, clean_Y = hard_clean(X, Y)
         norm_X = self.normalise(clean_X)
-        # append first [ones] to X
-        norm_X["ones"] = np.ones(len(clean_Y))
-        self.features.insert(0, "ones")
         # cast X to np.array
         np_X = np.empty((len(clean_Y), len(norm_X)))
         for i, key in enumerate(self.features):
@@ -207,9 +204,9 @@ class Trainer(object):
         return 1.0 / (1 + np.exp(-x))
 
     def cost_func(self, y, pred):
-        cost_1 = -y * np.log(pred)
+        cost_1 = y * np.log(pred)
         cost_0 = (1 - y) * np.log(1 - pred)
-        cost = np.sum(cost_1 - cost_0) / len(y)
+        cost = -np.sum(cost_1 + cost_0) / len(y)
         return cost
 
 @click.command()

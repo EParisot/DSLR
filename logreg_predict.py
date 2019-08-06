@@ -53,9 +53,6 @@ class Predictor(object):
         # clean X Y and normalise X
         clean_X = clean(X)
         norm_X = self.normalise(clean_X)
-        # append first [ones] to X
-        norm_X["ones"] = np.ones(len(norm_X[next(iter(norm_X))]))
-        self.features.insert(0, "ones")
         # cast X to np.array
         np_X = np.empty((len(norm_X[next(iter(norm_X))]), len(norm_X)))
         for i, key in enumerate(norm_X):
@@ -81,7 +78,7 @@ class Predictor(object):
         for i in range(len(Y[0])):
             pred = []
             for j in range(len(Y)):
-                pred.append(Y[j][i])
+                pred.append(Y[j][i][0])
             pred_by_class.append(pred)
         with open("houses.csv", mode="w") as f:
             f.write("Index,Hogwarts House\n")
