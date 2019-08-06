@@ -55,12 +55,10 @@ def save_model(model, ranges, model_file):
     with open(model_file, mode) as f:
         json.dump(data, f)
 
-def get_numerics(data, get_hand=False):
+def get_numerics(data):
     r = re.compile(r"-?\d+\.\d+")
     num_data = {}
     # double check num values
-    if get_hand:
-        num_data["Best Hand"] = []
     for key in data[0]:
         if r.match(data[0][key]):
             num_data[key] = []
@@ -70,12 +68,7 @@ def get_numerics(data, get_hand=False):
     # build numeric array
     for elem in data:
         for key in elem:
-            if get_hand and key == "Best Hand":
-                if elem[key] == "Left":
-                    num_data[key].append(0)
-                else:
-                    num_data[key].append(1)
-            elif key in num_data:
+            if key in num_data:
                 if r.match(elem[key]):
                     num_data[key].append(float(elem[key]))
                 else:

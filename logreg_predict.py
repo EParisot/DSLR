@@ -36,7 +36,7 @@ class Predictor(object):
         return norm_X
 
     def select_feat(self):
-        X = get_numerics(self.data, get_hand=True)
+        X = get_numerics(self.data)
         if len(self.features) == 0:
             self.features = []
             for key in X.keys():

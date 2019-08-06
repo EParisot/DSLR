@@ -63,7 +63,7 @@ class Trainer(object):
         return norm_X
 
     def select_feat(self):
-        X = get_numerics(self.data, get_hand=True)
+        X = get_numerics(self.data)
         if len(self.features) == 0:
             self.features = []
             for key in X.keys():
@@ -163,8 +163,6 @@ class Trainer(object):
             loss, acc, val_loss, val_acc = self.train_epoch(Y, Y_val, loss_class)
             # Check result
             if epoch and loss_class[-1] - loss < 0.000001:
-                if self.plot == True:
-                    self.animate(Y)
                 return loss_class, acc_class, val_loss_class, val_acc_class
             loss_class.append(loss)
             acc_class.append(acc)
