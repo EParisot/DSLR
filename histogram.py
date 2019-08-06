@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from utils import read_data, get_numerics, get_classes, mean, std, _min
 import click
+import math
 
 @click.command()
 @click.argument("data_file", type=click.Path(exists=True))
@@ -8,7 +9,7 @@ import click
 def main(data_file, sep):
     classes_column = "Hogwarts House"
     data, _ = read_data(data_file, sep)
-    num_data = get_numerics(data, True)
+    num_data = get_numerics(data, False)
     class_list = get_classes(data, classes_column)
 
     matter = find_most_equal(num_data, class_list)
@@ -19,10 +20,21 @@ def main(data_file, sep):
     for i, key in enumerate(num_data.keys()):
         ax = fig.add_subplot(4, 4, i + 1)
         ax.set_title(key)
+        classes = []
         # for each class
         for c in class_list:
-            c_tab = class_tab(num_data[key], class_list[c])
-            ax.hist(c_tab, alpha=0.5)
+            c_tab = []
+            # for each note
+            for idx, val in enumerate(num_data[key]):
+                if idx in class_list[c]:
+                    c_tab.append(float(val))
+            classes.append(c_tab)
+        for cat in classes:
+            clean_cat = []
+            for elem in cat:
+                if not math.isnan(elem):
+                    clean_cat.append(elem)
+            ax.hist(clean_cat, alpha=0.5)
     fig.legend(class_list.keys(), loc = (0.8, 0))
     fig.tight_layout()
     plt.show(block = True)

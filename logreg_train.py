@@ -218,7 +218,7 @@ class Trainer(object):
 @click.argument("data_file", type=click.Path(exists=True))
 @click.option("-sep", "sep", default=",", help="csv separator")
 @click.argument("model_file", default="model.json")
-@click.option("-f", "features_file", default="", help="selected features file (one by line)")
+@click.option("-f", "features_file", default="features.csv", help="selected features file (one by line)")
 @click.option("-p", "plot", is_flag=True, help="plot data")
 @click.option("-e", "epochs", default=1, help="epochs to train")
 @click.option("-l", "learning_rate", default=0.1, help="learning rate")
