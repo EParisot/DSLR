@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from utils import read_data, get_numerics, get_classes, mean, std, clean, get_Y
+from utils import read_data, get_numerics, get_classes, mean, std, hard_clean, get_Y
 import click
 from math import isnan
 
@@ -9,9 +9,9 @@ from math import isnan
 def main(data_file, sep):
     classes_column = "Hogwarts House"
     data, _ = read_data(data_file, sep)
-    num_data = get_numerics(data, False)
+    num_data = get_numerics(data)
     Y = get_Y(data, classes_column)
-    num_data, labels = clean(num_data, Y)
+    num_data, Y = hard_clean(num_data, Y)
     class_list = get_classes(data, classes_column)
     fig = plt.figure("Scatter  plot")
     # for each matter
@@ -34,7 +34,7 @@ def main(data_file, sep):
                     c_tab_a = []
                     c_tab_b = []
                     # for each note 
-                    for idx, label in enumerate(labels):
+                    for idx, label in enumerate(Y):
                         if label == c:
                             c_tab_a.append(float(num_data[key_a][idx]))
                             c_tab_b.append(float(num_data[key_b][idx]))

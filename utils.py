@@ -55,7 +55,7 @@ def save_model(model, ranges, model_file):
     with open(model_file, mode) as f:
         json.dump(data, f)
 
-def get_numerics(data, exclude_nan):
+def get_numerics(data, get_hand=False):
     r = re.compile(r"-?\d+\.\d+")
     num_data = {}
     # double check num values
@@ -65,17 +65,36 @@ def get_numerics(data, exclude_nan):
     for key in data[-1]:
         if r.match(data[-1][key]):
             num_data[key] = []
+    if get_hand:
+        num_data["Best Hand"] = []
     # build numeric array
     for elem in data:
         for key in elem:
-            if key in num_data:
+            if get_hand and key == "Best Hand":
+                if elem[key] == "Left":
+                    num_data[key].append(0)
+                else:
+                    num_data[key].append(1)
+            elif key in num_data:
                 if r.match(elem[key]):
                     num_data[key].append(float(elem[key]))
-                elif exclude_nan == False:
+                else:
                     num_data[key].append("NaN")
     return num_data
 
-def clean(X, Y):
+def clean(X):
+    clean_X = {}
+    for key in X:
+        clean_X[key] = []
+    for idx, _ in enumerate(X[next(iter(X))]):
+        for key in X:
+            if X[key][idx] == "NaN":
+                clean_X[key].append(mean(X[key]))
+            else:
+                clean_X[key].append(X[key][idx])
+    return clean_X
+
+def hard_clean(X, Y):
     clean_X = {}
     clean_Y = []
     for key in X:

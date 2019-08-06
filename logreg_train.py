@@ -3,7 +3,7 @@ import click
 import matplotlib.pyplot as plt
 import numpy as np
 import random
-from utils import read_data, read_model, save_model, get_numerics, clean, classes_list, get_Y, _min, _max
+from utils import read_data, read_model, save_model, get_numerics, hard_clean, classes_list, get_Y, _min, _max
 
 class Trainer(object):
 
@@ -63,7 +63,7 @@ class Trainer(object):
         return norm_X
 
     def select_feat(self):
-        X = get_numerics(self.data, False)
+        X = get_numerics(self.data, get_hand=True)
         if len(self.features) == 0:
             self.features = []
             for key in X.keys():
@@ -79,11 +79,11 @@ class Trainer(object):
         Y = get_Y(self.data, self.classes_column)
         # select X features:
         X = self.select_feat()
-        # clean X Y and normalise X
-        clean_X, clean_Y = clean(X, Y)
+        # clean and normalise X
+        clean_X, clean_Y = hard_clean(X, Y)
         norm_X = self.normalise(clean_X)
         # append first [ones] to X
-        norm_X["ones"] = [1.0] * len(clean_Y)
+        norm_X["ones"] = np.ones(len(clean_Y))
         self.features.insert(0, "ones")
         # cast X to np.array
         np_X = np.empty((len(clean_Y), len(norm_X)))
@@ -124,6 +124,11 @@ class Trainer(object):
                 self.thetas[i] = self.model[self.curr_class][self.theta]
             # train
             loss, acc, val_loss, val_acc = self.train_class(tmp_Y, tmp_Y_val)
+            
+            print("loss : %f ; acc : %f" % (round(loss[-1], 2), round(acc[-1], 2)), flush=True)
+            print("val_loss : %f ; val_acc : %f" % (round(val_loss[-1], 2), round(val_acc[-1], 2)),  flush=True)
+            
+
             self.acc.append(acc)
             self.loss.append(loss)
             self.val_acc.append(val_acc)
@@ -157,24 +162,17 @@ class Trainer(object):
         val_loss_class = []
         val_acc_class = []
         for epoch in range(self.epochs):
-            print("Epoch : %d" % (epoch + 1))
             # process train epoch
             loss, acc, val_loss, val_acc = self.train_epoch(Y, Y_val, loss_class)
-            # CHeck result
-            if val_acc >= 0.98:
+            # Check result
+            if epoch and loss_class[-1] - loss < 0.000001:
                 if self.plot == True:
                     self.animate(Y)
                 return loss_class, acc_class, val_loss_class, val_acc_class
-
-            print("loss : %f ; acc : %f" % (round(loss, 2), round(acc, 2)))
-            print("val_loss : %f ; val_acc : %f" % (round(val_loss, 2), round(val_acc, 2)))
             loss_class.append(loss)
             acc_class.append(acc)
             val_loss_class.append(val_loss)
             val_acc_class.append(val_acc)
-            if val_acc > 0.98:
-                return loss_class, acc_class, val_loss_class, val_acc_class
-
         return loss_class, acc_class, val_loss_class, val_acc_class
 
     def animate(self, Y):
@@ -211,7 +209,7 @@ class Trainer(object):
     def cost_func(self, y, pred):
         cost_1 = -y * np.log(pred)
         cost_0 = (1 - y) * np.log(1 - pred)
-        cost = np.mean(cost_1 - cost_0)
+        cost = np.sum(cost_1 - cost_0) / len(y)
         return cost
 
 @click.command()

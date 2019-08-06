@@ -26,7 +26,7 @@ class Descriptor(object):
             "75%  ": q_3, 
             "max  ": _max
         }
-        num_data = get_numerics(self.data, False)
+        num_data = get_numerics(self.data)
         for feature in num_data:
             self.description[feature] = {}
             for param in params:

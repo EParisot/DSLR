@@ -9,7 +9,7 @@ import math
 def main(data_file, sep):
     classes_column = "Hogwarts House"
     data, _ = read_data(data_file, sep)
-    num_data = get_numerics(data, False)
+    num_data = get_numerics(data)
     class_list = get_classes(data, classes_column)
     fig = plt.figure("Pair plot")
     # for each matter

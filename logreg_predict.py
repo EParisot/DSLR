@@ -3,7 +3,7 @@ import click
 import matplotlib.pyplot as plt
 import numpy as np
 import random
-from utils import read_data, read_model, save_model, get_numerics, classes_list, get_Y, _min, _max, mean
+from utils import read_data, read_model, save_model, get_numerics, clean, classes_list, get_Y, _min, _max, mean
 
 class Predictor(object):
 
@@ -26,18 +26,6 @@ class Predictor(object):
                 exit(0)
         for feat in self.ranges:
             self.features.append(feat)
-        
-    def clean(self, X):
-        clean_X = {}
-        for key in X:
-            clean_X[key] = []
-        for idx, _ in enumerate(X[next(iter(X))]):
-            for key in X:
-                if X[key][idx] == "NaN":
-                    clean_X[key].append(mean(X[key]))
-                else:
-                    clean_X[key].append(X[key][idx])
-        return clean_X
 
     def normalise(self, X):
         norm_X = {}
@@ -48,7 +36,7 @@ class Predictor(object):
         return norm_X
 
     def select_feat(self):
-        X = get_numerics(self.data, False)
+        X = get_numerics(self.data, get_hand=True)
         if len(self.features) == 0:
             self.features = []
             for key in X.keys():
@@ -63,10 +51,10 @@ class Predictor(object):
         # select X features:
         X = self.select_feat()
         # clean X Y and normalise X
-        clean_X = self.clean(X)
+        clean_X = clean(X)
         norm_X = self.normalise(clean_X)
         # append first [ones] to X
-        norm_X["ones"] = [1.0] * len(norm_X[next(iter(norm_X))])
+        norm_X["ones"] = np.ones(len(norm_X[next(iter(norm_X))]))
         self.features.insert(0, "ones")
         # cast X to np.array
         np_X = np.empty((len(norm_X[next(iter(norm_X))]), len(norm_X)))
