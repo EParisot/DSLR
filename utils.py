@@ -55,7 +55,7 @@ def save_model(model, ranges, model_file):
     with open(model_file, mode) as f:
         json.dump(data, f)
 
-def get_numerics(data):
+def get_numerics(data, get_str=True):
     r = re.compile(r"-?\d+\.\d+")
     num_data = {}
     str_data = {}
@@ -65,7 +65,7 @@ def get_numerics(data):
         if r.match(data[0][key]):
             num_data[key] = []
             total_data[key] = []
-        elif type(data[0][key]) == str:
+        elif get_str and type(data[0][key]) == str:
             str_data[key] = get_uniques(data, key)
             total_data[key] = []
     # build numeric array
@@ -76,7 +76,7 @@ def get_numerics(data):
                     total_data[key].append(float(elem[key]))
                 else:
                     total_data[key].append("NaN")
-            elif key in str_data:
+            elif get_str and key in str_data:
                 total_data[key].append(str_data[key].index(elem[key]))
     return total_data
 

@@ -9,7 +9,7 @@ from math import isnan
 def main(data_file, sep):
     classes_column = "Hogwarts House"
     data, _ = read_data(data_file, sep)
-    num_data = get_numerics(data)
+    num_data = get_numerics(data, get_str=False)
     Y = get_Y(data, classes_column)
     num_data, Y = hard_clean(num_data, Y)
     class_list = get_classes(data, classes_column)
