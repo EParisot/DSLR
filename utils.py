@@ -58,22 +58,34 @@ def save_model(model, ranges, model_file):
 def get_numerics(data):
     r = re.compile(r"-?\d+\.\d+")
     num_data = {}
-    # double check num values
+    str_data = {}
+    total_data = {}
+    # check num values
     for key in data[0]:
         if r.match(data[0][key]):
             num_data[key] = []
-    for key in data[-1]:
-        if r.match(data[-1][key]):
-            num_data[key] = []
+            total_data[key] = []
+        elif type(data[0][key]) == str:
+            str_data[key] = get_uniques(data, key)
+            total_data[key] = []
     # build numeric array
     for elem in data:
         for key in elem:
             if key in num_data:
                 if r.match(elem[key]):
-                    num_data[key].append(float(elem[key]))
+                    total_data[key].append(float(elem[key]))
                 else:
-                    num_data[key].append("NaN")
-    return num_data
+                    total_data[key].append("NaN")
+            elif key in str_data:
+                total_data[key].append(str_data[key].index(elem[key]))
+    return total_data
+
+def get_uniques(data, key):
+    uniques = []
+    for elem in data:
+        if elem[key] not in uniques:
+            uniques.append(elem[key])
+    return uniques
 
 def clean(X):
     clean_X = {}
